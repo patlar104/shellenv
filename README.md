@@ -7,6 +7,10 @@ shell you already have installed.
 
 The requested shell is not bundled with Shellenv; it must exist on the host.
 
+## Docs
+
+- [Commands](docs/commands.md) — allowed CLI commands, shells, flags, and what `run` will execute
+
 ## Getting Started
 
 1. Build from source:
@@ -15,8 +19,21 @@ The requested shell is not bundled with Shellenv; it must exist on the host.
    cargo build
    ```
 
-   The debug binary is `target/debug/shellenv`. Use `cargo build --release`
-   for an optimized build.
+   That writes `target/debug/shellenv`. It does **not** put `shellenv` on your
+   `PATH`. Use the binary by path:
+
+   ```bash
+   ./target/debug/shellenv --help
+   ```
+
+   Or install it into `~/.cargo/bin` (usually already on `PATH`):
+
+   ```bash
+   cargo install --path .
+   ```
+
+   After install, the commands below can use `shellenv` instead of
+   `./target/debug/shellenv`. `cargo run -- <args>` also works from this repo.
 
 2. Install a config (default path: `~/.config/shellenv/config.toml`):
 
@@ -28,14 +45,17 @@ The requested shell is not bundled with Shellenv; it must exist on the host.
 3. Validate it:
 
    ```bash
-   shellenv config validate
+   ./target/debug/shellenv config validate
    ```
 
 4. Run a command:
 
    ```bash
-   shellenv run --profile default --shell bash -- 'echo hello'
+   ./target/debug/shellenv run --profile default --shell bash -- 'echo hello'
    ```
+
+   `echo hello` is only an example. See [Commands](docs/commands.md) for every
+   allowed CLI command and what `run` will execute.
 
 ## Validate configuration
 
@@ -52,6 +72,8 @@ Dump the JSON Schema with `shellenv config schema`. The schema version is
 printed by `shellenv config schema-version`.
 
 ## Execute a command
+
+Full flag, shell, and command-string rules: [Commands](docs/commands.md).
 
 `shellenv run` also loads `~/.config/shellenv/config.toml` by default. Pass
 `--config` to use another file. Tokens after `--` are joined into a **shell
@@ -87,3 +109,7 @@ On Windows, `cmd` is also supported:
 ```bash
 shellenv run --profile default --shell cmd -- 'echo hello'
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -1,0 +1,13 @@
+---
+description: Shellenv project conventions for CLI, config, and verification
+alwaysApply: true
+---
+
+# Shellenv
+
+- Invoke the CLI as `./target/debug/shellenv` or `cargo run -- <args>`. `cargo build` does not put `shellenv` on `PATH`.
+- Default config is `~/.config/shellenv/config.toml`. Load it with `shellenv_core::config::load::load(None)` (or `--config` / `--path`). Do not reimplement path lookup.
+- `--profile` must exist in the loaded config. Do not silently fall back to another profile.
+- `shellenv run` executes a **shell command string** (tokens after `--` joined with spaces), not a raw argv array.
+- `[python]` and `[shells]` in the example config are parsed but unused. Do not pretend `default_unix` selects `--shell`.
+- Verify with `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, and `cargo test --workspace --locked`.

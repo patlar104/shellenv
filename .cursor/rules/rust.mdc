@@ -1,0 +1,14 @@
+---
+description: Rust conventions for Shellenv execution and config code
+globs: "**/*.rs"
+alwaysApply: false
+---
+
+# Rust
+
+- Join and split `PATH` with `std::env::join_paths` / `split_paths`. Do not concatenate with `:`.
+- `build_env` starts from the parent environment, then applies `config.env`, profile `env`, then path prepend/append. `run_in_shell` uses `env_clear` plus that map.
+- Expansion of `~` and `$VAR` is a single pass. Missing variables are errors, not empty strings.
+- Skip tests that need a shell executable when it is not installed. Do not assume `bash`/`zsh`/`fish`/`pwsh` exist on every machine.
+- Use `thiserror` for public error types and preserve `#[source]` causes.
+- Timeouts must kill the child (Unix: process group) and drain stdout/stderr on reader threads so large output cannot deadlock.
