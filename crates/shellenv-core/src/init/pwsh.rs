@@ -6,7 +6,7 @@ pub fn init_code(binary: Option<&Path>) -> String {
         Some(path) => format!("& {}", quote_executable(path)),
         None => concat!(
             "$shellenvBinary = (Get-Command shellenv -CommandType Application ",
-            "-ErrorAction Stop).Source\n    & $shellenvBinary"
+            "-ErrorAction Stop | Select-Object -First 1).Source\n    & $shellenvBinary"
         )
         .to_string(),
     };
@@ -96,6 +96,7 @@ mod tests {
         let code = init_code(None);
 
         assert!(code.contains("Get-Command shellenv -CommandType Application"));
+        assert!(code.contains("Select-Object -First 1"));
         assert!(code.contains("& $shellenvBinary run"));
         assert!(!code.contains("& shellenv run"));
     }

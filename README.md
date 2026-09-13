@@ -135,6 +135,9 @@ Use `./target/debug/shellenv` instead of `shellenv` when the binary is not on
 - **`shellenv_exec_agent`** — same, but adds `--timeout-ms` (default `30000`,
   overridable with `SHELLENV_TIMEOUT_MS`) for bounded agent-style runs.
 
+As with `shellenv run`, tokens after `--` are joined into a shell command string;
+the helpers do not execute a raw argv array.
+
 Both helpers read **`SHELLENV_PROFILE`**. When it is unset or empty, they use
 the `default` profile:
 
@@ -150,7 +153,7 @@ shellenv_run echo "using dev profile"
 
 ```powershell
 $env:SHELLENV_PROFILE = 'dev'
-shellenv_run Write-Output 'using dev profile'
+shellenv_run "Write-Output 'using dev profile'"
 ```
 
 ### Which `shellenv` binary runs
