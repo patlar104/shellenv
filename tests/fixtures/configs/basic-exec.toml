@@ -1,0 +1,17 @@
+# Config used by `shellenv run` integration tests.
+version = "1"
+
+[paths]
+prepend = ["~/bin"]
+
+[env]
+MY_VAR = "base"
+EDITOR = "nvim"
+
+[profiles.default]
+description = "Default execution profile"
+
+[profiles.test_exec]
+description = "Profile used to verify environment overrides"
+[profiles.test_exec.env]
+MY_VAR = "from_profile"

@@ -1,7 +1,8 @@
 # shellenv configuration example
 #
 # Copy this file to ~/.config/shellenv/config.toml and edit it.
-# Validate with: shellenv config validate ~/.config/shellenv/config.toml
+# Validate with: shellenv config validate
+# Or: shellenv config validate --path ~/.config/shellenv/config.toml
 #
 # JSON Schema: config/schema-v1.json
 # Dump the live schema with: shellenv config schema
@@ -33,6 +34,9 @@ EDITOR = "nvim"
 strategies = ["uv", "conda", "venv", "system"]
 
 # Named profiles. Activate one to layer extra environment variables.
+[profiles.default]
+description = "Default execution profile"
+
 [profiles.dev]
 description = "Local development"
 [profiles.dev.env]
