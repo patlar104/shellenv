@@ -110,6 +110,81 @@ On Windows, `cmd` is also supported:
 shellenv run --profile default --shell cmd -- 'echo hello'
 ```
 
+## Shell Integration
+
+`shellenv init <shell>` prints shell-native helper functions you can load in an
+interactive session. Init does **not** load your config; helpers delegate to
+`shellenv run`, which loads `~/.config/shellenv/config.toml` as usual.
+
+Load the helpers once per shell startup:
+
+| Shell | Where to add it | How to load |
+| --- | --- | --- |
+| Bash | `~/.bashrc` | `eval "$(shellenv init bash)"` |
+| Zsh | `~/.zshrc` | `eval "$(shellenv init zsh)"` |
+| Fish | `~/.config/fish/config.fish` | `shellenv init fish \| source` |
+| PowerShell | `$PROFILE` | `shellenv init pwsh \| Out-String \| Invoke-Expression` |
+
+Use `./target/debug/shellenv` instead of `shellenv` when the binary is not on
+`PATH`.
+
+### Helpers
+
+- **`shellenv_run`** — runs `shellenv run` with your profile, the init shell,
+  and the arguments you pass. Example: `shellenv_run echo hello`.
+- **`shellenv_exec_agent`** — same, but adds `--timeout-ms` (default `30000`,
+  overridable with `SHELLENV_TIMEOUT_MS`) for bounded agent-style runs.
+
+Both helpers read **`SHELLENV_PROFILE`**. When it is unset or empty, they use
+the `default` profile:
+
+```bash
+export SHELLENV_PROFILE=dev
+shellenv_run echo "using dev profile"
+```
+
+```fish
+set -gx SHELLENV_PROFILE dev
+shellenv_run echo "using dev profile"
+```
+
+```powershell
+$env:SHELLENV_PROFILE = 'dev'
+shellenv_run Write-Output 'using dev profile'
+```
+
+### Which `shellenv` binary runs
+
+When init is generated, the output usually embeds the absolute path of the
+`shellenv` binary that ran `init` (via `current_exe`). Generated helpers invoke
+that path with `command` (Bash, Zsh, Fish) or `&` (PowerShell) so a local
+function or alias named `shellenv` cannot shadow the real executable.
+
+If the path cannot be determined, helpers fall back to resolving the
+`shellenv` **executable** on `PATH` (`command shellenv` on Unix shells;
+PowerShell resolves an **Application** named `shellenv`, not a function or
+alias).
+
+### Baked-path lifecycle
+
+Dynamic loading (for example `eval "$(shellenv init zsh)"` in `.zshrc`) runs
+`init` on each new shell, so the embedded path tracks wherever `shellenv` lives
+today.
+
+If you **persist** init output to a file instead:
+
+```bash
+shellenv init zsh > ~/.config/shellenv/init.zsh
+# then in ~/.zshrc: source ~/.config/shellenv/init.zsh
+```
+
+that file keeps the path from the moment it was generated. After you move,
+reinstall, or replace the `shellenv` binary, regenerate the file (or switch
+back to dynamic `eval` / `source`).
+
+Interactive init supports `bash`, `zsh`, `fish`, and `pwsh` only (not `cmd`).
+See [Commands](docs/commands.md#init) for CLI details.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

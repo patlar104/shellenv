@@ -16,6 +16,7 @@ If `shellenv` is not on your `PATH`, use `./target/debug/shellenv` after
 | `shellenv config schema-version` | Print the schema version (`1`) |
 | `shellenv config validate` | Load and validate a config file |
 | `shellenv run -- …` | Run a command in a configured shell |
+| `shellenv init <shell>` | Print shell-native helpers for interactive use |
 
 Anything else is rejected by the CLI (`unrecognized subcommand`).
 
@@ -29,6 +30,45 @@ shellenv config validate config/config.example.toml
 
 With no path, this loads `~/.config/shellenv/config.toml`. `--path` and a
 positional path are equivalent; do not pass both.
+
+## `init`
+
+```bash
+shellenv init bash
+shellenv init zsh
+shellenv init fish
+shellenv init pwsh
+```
+
+Prints sourceable helper functions (`shellenv_run`, `shellenv_exec_agent`) to
+stdout. **Does not load** a config file; helpers call `shellenv run`, which
+loads config when you invoke them.
+
+### Supported init shells
+
+| Shell argument | Notes |
+| --- | --- |
+| `bash` | POSIX-style functions |
+| `zsh` | Same helper shape as bash with `--shell zsh` |
+| `fish` | Fish `function` definitions |
+| `pwsh` | PowerShell `function` definitions |
+
+`cmd` and other names are rejected (`unsupported shell` on stderr, exit `1`).
+Shell names are **case-insensitive** (`shellenv init BASH` emits `--shell bash`).
+
+### Embedded binary path
+
+When `current_exe` succeeds, generated code embeds that absolute path so helpers
+invoke the same binary that produced the init output. If exe resolution fails,
+generated code falls back to the `shellenv` executable on `PATH` (PowerShell:
+`Get-Command shellenv -CommandType Application`).
+
+If you save init output to a file instead of evaluating it on each startup,
+regenerate that file after moving, reinstalling, or replacing the `shellenv`
+binary. Dynamic loading (for example `eval "$(shellenv init zsh)"`) picks up a
+new path automatically.
+
+Shell integration examples: [README](../README.md#shell-integration).
 
 ## `run`
 
