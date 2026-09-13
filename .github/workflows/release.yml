@@ -1,0 +1,98 @@
+# Scaffold: tag-driven GitHub Release with prebuilt binaries.
+# This can later be replaced or complemented by release-plz
+# (https://github.com/release-plz/release-plz) for version bumps and changelogs.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="${{ matrix.target }}"
+          tag="${GITHUB_REF_NAME}"
+          bin="shellenv"
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            bin="shellenv.exe"
+          fi
+          src="target/${target}/release/${bin}"
+          test -f "${src}"
+
+          stage="$(mktemp -d)"
+          cp "${src}" "${stage}/${bin}"
+          mkdir -p dist
+          asset="shellenv-${tag}-${target}"
+
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            (cd "${stage}" && 7z a -tzip "${GITHUB_WORKSPACE}/dist/${asset}.zip" "${bin}")
+          else
+            tar -C "${stage}" -czf "dist/${asset}.tar.gz" "${bin}"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+
+  github-release:
+    name: GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Flatten artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          find artifacts -type f -exec cp {} dist/ \;
+          ls -la dist
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
