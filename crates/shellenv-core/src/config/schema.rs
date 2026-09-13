@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
+/// Current config schema version understood by this crate.
+pub const SCHEMA_VERSION: &str = "1";
+
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub version: String,
@@ -45,5 +48,9 @@ pub struct ShellConfig {
     pub default_windows: String,
 }
 
-fn default_unix_shell() -> String { "bash".to_string() }
-fn default_windows_shell() -> String { "pwsh".to_string() }
+fn default_unix_shell() -> String {
+    "bash".to_string()
+}
+fn default_windows_shell() -> String {
+    "pwsh".to_string()
+}
