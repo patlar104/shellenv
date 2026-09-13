@@ -1,3 +1,5 @@
+pub(crate) mod posix_quote;
+
 pub mod bash;
 pub mod fish;
 pub mod pwsh;
