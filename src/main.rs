@@ -18,6 +18,8 @@ struct Cli {
 enum Commands {
     /// Inspect and validate configuration
     Config(ConfigArgs),
+    /// Print shell integration code for eval/source
+    Init(InitArgs),
     /// Run a command in a configured, non-interactive shell
     Run(RunArgs),
 }
@@ -78,6 +80,13 @@ struct RunArgs {
     command: Vec<String>,
 }
 
+#[derive(Args, Debug)]
+struct InitArgs {
+    /// Shell to generate init code for: bash, zsh, fish, pwsh
+    #[arg()]
+    shell: String,
+}
+
 fn main() -> ExitCode {
     match run(Cli::parse()) {
         Ok(code) => code,
@@ -94,8 +103,28 @@ fn run(cli: Cli) -> Result<ExitCode, Box<dyn std::error::Error>> {
             cmd_config(args)?;
             Ok(ExitCode::SUCCESS)
         }
+        Commands::Init(args) => cmd_init(args),
         Commands::Run(args) => cmd_run(args),
     }
+}
+
+fn cmd_init(args: InitArgs) -> Result<ExitCode, Box<dyn std::error::Error>> {
+    use shellenv_core::init::generate_init;
+    use std::str::FromStr;
+
+    let shell = match shellenv_core::init::ShellKind::from_str(&args.shell) {
+        Ok(shell) => shell,
+        Err(_) => {
+            eprintln!("error: unsupported shell: {}", args.shell);
+            eprintln!("supported: bash, zsh, fish, pwsh");
+            return Ok(ExitCode::from(1));
+        }
+    };
+
+    let exe = std::env::current_exe().ok();
+    let code = generate_init(shell, exe.as_deref());
+    print!("{code}");
+    Ok(ExitCode::SUCCESS)
 }
 
 fn cmd_config(args: ConfigArgs) -> Result<(), Box<dyn std::error::Error>> {

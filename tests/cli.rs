@@ -319,3 +319,24 @@ fn run_cwd_changes_working_directory() {
     let actual = PathBuf::from(stdout.trim()).canonicalize().unwrap();
     assert_eq!(actual, expected);
 }
+
+#[test]
+fn init_bash_prints_code() {
+    Command::cargo_bin("shellenv")
+        .unwrap()
+        .args(["init", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("shellenv_run"))
+        .stdout(predicate::str::contains("--shell bash"));
+}
+
+#[test]
+fn init_unknown_shell_errors() {
+    Command::cargo_bin("shellenv")
+        .unwrap()
+        .args(["init", "ksh"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unsupported shell"));
+}
