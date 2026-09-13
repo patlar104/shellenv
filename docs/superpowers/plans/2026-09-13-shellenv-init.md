@@ -17,7 +17,7 @@
 - Shell target is a **literal** in generated code (`--shell bash`, etc.), not a runtime local.
 - Empty env contract: unset and `""` → default; whitespace-only values pass through unchanged.
 - Binary path stays `Option<&Path>` until each backend renders quoting; no CLI `to_string_lossy()`.
-- No shared cross-shell quoting abstraction.
+- No shared quoting across Fish/PowerShell and POSIX. Bash and Zsh may share a tiny POSIX single-quote helper (`init/posix_quote.rs` or similar); Fish and PowerShell keep their own quoters.
 - Bash/Zsh/Fish: `command` for executable invocation.
 - PowerShell: `&` absolute path when available; on fallback, resolve Application named `shellenv` (not function/alias).
 - Never use PowerShell `$profile`; only `$shellenvProfile`, `$shellenvTimeout`, `$shellenvArgs` (if needed).
@@ -31,8 +31,9 @@
 | File | Responsibility |
 | --- | --- |
 | `crates/shellenv-core/src/init/mod.rs` | `ShellKind`, `UnsupportedShell`, `FromStr`, `generate_init`, re-exports |
-| `crates/shellenv-core/src/init/bash.rs` | Bash quoting + `init_code` |
-| `crates/shellenv-core/src/init/zsh.rs` | Zsh quoting + `init_code` |
+| `crates/shellenv-core/src/init/posix_quote.rs` | Shared Bash/Zsh single-quote helper only |
+| `crates/shellenv-core/src/init/bash.rs` | Bash `init_code` (uses `posix_quote`) |
+| `crates/shellenv-core/src/init/zsh.rs` | Zsh `init_code` (uses `posix_quote`) |
 | `crates/shellenv-core/src/init/fish.rs` | Fish quoting + `init_code` |
 | `crates/shellenv-core/src/init/pwsh.rs` | PowerShell quoting + Application fallback + `init_code` |
 | `crates/shellenv-core/src/lib.rs` | `pub mod init;` |
@@ -348,7 +349,7 @@ Expected: FAIL.
 
 - [ ] **Step 3: Implement zsh backend**
 
-Same structure as bash, with `--shell zsh` and independent `quote_executable` (duplicate intentionally; no shared quoting module).
+Same structure as bash, with `--shell zsh`. Reuse `crate::init::posix_quote::quote_executable` (shared with bash only; do not duplicate).
 
 - [ ] **Step 4: Run tests to verify they pass**
 
