@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand};
-use shellenv_core::config::SCHEMA_VERSION;
 use shellenv_core::config::load;
+use shellenv_core::config::{SCHEMA_VERSION, json_schema_pretty};
 
 #[derive(Parser, Debug)]
 #[command(name = "shellenv", version, arg_required_else_help = true)]
@@ -26,6 +26,8 @@ struct ConfigArgs {
 
 #[derive(Subcommand, Debug)]
 enum ConfigCommand {
+    /// Print the JSON Schema for the config file format
+    Schema,
     /// Print the current config schema version
     SchemaVersion,
     /// Load and validate a config file
@@ -45,9 +47,13 @@ fn main() -> ExitCode {
     }
 }
 
-fn run(cli: Cli) -> Result<(), load::ConfigError> {
+fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
     match cli.command {
         Commands::Config(args) => match args.command {
+            ConfigCommand::Schema => {
+                println!("{}", json_schema_pretty()?);
+                Ok(())
+            }
             ConfigCommand::SchemaVersion => {
                 println!("{SCHEMA_VERSION}");
                 Ok(())

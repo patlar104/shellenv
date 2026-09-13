@@ -44,6 +44,40 @@ version = "1"
 }
 
 #[test]
+fn config_schema_prints_json_schema() {
+    Command::cargo_bin("shellenv")
+        .unwrap()
+        .args(["config", "schema"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\"$schema\""))
+        .stdout(predicate::str::contains("\"title\": \"Config\""));
+}
+
+#[test]
+fn committed_schema_v1_matches_command() {
+    let output = Command::cargo_bin("shellenv")
+        .unwrap()
+        .args(["config", "schema"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    let committed = fs::read_to_string("config/schema-v1.json").unwrap();
+    assert_eq!(stdout, committed);
+}
+
+#[test]
+fn example_config_validates() {
+    Command::cargo_bin("shellenv")
+        .unwrap()
+        .args(["config", "validate", "config/config.example.toml"])
+        .assert()
+        .success()
+        .stdout("OK\n");
+}
+
+#[test]
 fn config_validate_reports_error() {
     Command::cargo_bin("shellenv")
         .unwrap()

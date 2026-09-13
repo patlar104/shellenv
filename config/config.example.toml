@@ -1,0 +1,51 @@
+# shellenv configuration example
+#
+# Copy this file to ~/.config/shellenv/config.toml and edit it.
+# Validate with: shellenv config validate ~/.config/shellenv/config.toml
+#
+# JSON Schema: config/schema-v1.json
+# Dump the live schema with: shellenv config schema
+
+# Schema version. Currently only "1" is supported.
+version = "1"
+
+# PATH modifications applied when a shell starts.
+[paths]
+# Directories inserted at the front of PATH (highest precedence first).
+prepend = [
+  "~/bin",
+  "~/.local/bin",
+]
+# Directories appended to PATH.
+append = [
+  "/usr/local/bin",
+]
+
+# Environment variables applied to every profile unless a profile overrides them.
+[env]
+EDITOR = "nvim"
+# LANG = "en_US.UTF-8"
+
+# Python interpreter discovery.
+[python]
+# Ordered strategies used to locate a Python interpreter.
+# Supported values: "uv", "conda", "venv", "system"
+strategies = ["uv", "conda", "venv", "system"]
+
+# Named profiles. Activate one to layer extra environment variables.
+[profiles.dev]
+description = "Local development"
+[profiles.dev.env]
+DEBUG = "1"
+
+[profiles.prod]
+description = "Production-like environment"
+[profiles.prod.env]
+DEBUG = "0"
+
+# Default interactive shells per platform.
+[shells]
+# Unix: bash, zsh, fish, ...
+default_unix = "zsh"
+# Windows: pwsh, powershell, cmd
+default_windows = "pwsh"

@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Config",
+  "description": "Top-level shellenv configuration (`config.toml`).",
+  "type": "object",
+  "required": [
+    "paths",
+    "version"
+  ],
+  "properties": {
+    "env": {
+      "description": "Environment variables applied to all profiles.",
+      "default": {},
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "paths": {
+      "description": "PATH prepend/append directories.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Paths"
+        }
+      ]
+    },
+    "profiles": {
+      "description": "Named profiles with extra environment variables.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Profile"
+      }
+    },
+    "python": {
+      "description": "Python interpreter discovery settings.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/PythonConfig"
+        }
+      ]
+    },
+    "shells": {
+      "description": "Default shells per platform.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ShellConfig"
+        }
+      ]
+    },
+    "version": {
+      "description": "Config schema version. Must be `\"1\"`.",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "Paths": {
+      "description": "PATH modifications applied when a shell starts.",
+      "type": "object",
+      "properties": {
+        "append": {
+          "description": "Directories appended to `PATH`.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prepend": {
+          "description": "Directories inserted at the front of `PATH`.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Profile": {
+      "description": "A named environment profile.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "Human-readable description of the profile.",
+          "default": "",
+          "type": "string"
+        },
+        "env": {
+          "description": "Extra environment variables for this profile.",
+          "default": {},
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PythonConfig": {
+      "description": "Python interpreter discovery settings.",
+      "type": "object",
+      "properties": {
+        "strategies": {
+          "description": "Ordered lookup strategies: `uv`, `conda`, `venv`, `system`.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ShellConfig": {
+      "description": "Default interactive shells.",
+      "type": "object",
+      "properties": {
+        "default_unix": {
+          "description": "Default interactive shell on Unix (`bash`, `zsh`, `fish`, ...).",
+          "default": "bash",
+          "type": "string"
+        },
+        "default_windows": {
+          "description": "Default shell on Windows (`pwsh`, `powershell`, `cmd`).",
+          "default": "pwsh",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
